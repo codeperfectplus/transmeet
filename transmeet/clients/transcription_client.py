@@ -4,12 +4,12 @@ from groq import Groq
 import speech_recognition as sr
 
 
-from src.utils.file_utils import (
+from transmeet.utils.file_utils import (
     export_temp_wav,
     delete_file,
 )
 
-from src.utils.general_utils import get_logger
+from transmeet.utils.general_utils import get_logger
 
 logger = get_logger(__name__)
 

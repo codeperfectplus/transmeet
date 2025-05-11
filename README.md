@@ -5,16 +5,22 @@ LLM based meeting summarization
 
 ## How to use
 
-Create a `config.conf` file in the root directory with the following content:
+1. Clone the repository
 
-```ini
-[transcription]
-use_groq = true
-groq_model = whisper-large-v3-turbo
-groq_chunk_target_mb = 18
-groq_chunk_overlap = 0.5
-
-[api]
-groq_api_key = <YOUR_GROQ_API_KEY>
-groq_model_llm = llama-3.3-70b-versatile
+```bash
+git clone https://github.com/codeperfectplus/MeetingSummarizer
+cd MeetingSummarizer
 ```
+
+2. Install the dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up the environment variables
+
+```bash
+export GROQ_API_KEY=<your_groq_api_key>
+```
+

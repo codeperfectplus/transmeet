@@ -1,0 +1,1 @@
+from transmeet.processor import generate_meeting_transcript_and_minutes
