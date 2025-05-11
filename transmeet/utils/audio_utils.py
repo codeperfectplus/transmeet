@@ -8,7 +8,7 @@ def export_temp_wav(chunk, prefix, index):
     chunk.export(filename, format="wav")
     return filename
 
-def split_audio_by_target_size(audio, target_mb):
+def split_audio_by_target_size(audio, target_mb, overlap=0.0):
     """Split audio into chunks of approx. target MB without exceeding max size."""
     target_bytes = target_mb * 1024 * 1024
     total_duration_ms = len(audio)

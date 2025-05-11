@@ -4,7 +4,22 @@ from transmeet import generate_meeting_transcript_and_minutes
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Transcribe audio and generate meeting minutes.")
-    parser.add_argument("--audio-path", required=True, help="Path to the audio file.")
-    args = parser.parse_args()
-    generate_meeting_transcript_and_minutes(args.audio_path, output_dir="output")
+
+    audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
+    generate_meeting_transcript_and_minutes(audio_path, output_dir="output",
+                                            transcription_client="groq",
+                                            transcription_model="whisper-large-v3-turbo",
+                                            llm_client="groq",
+                                            llm_model="llama-3.3-70b-versatile",
+    )
+
+
+
+# [transcription]
+# speech_service = groq
+# groq_model = whisper-large-v3-turbo
+# groq_chunk_target_mb = 18
+# groq_chunk_overlap = 0.5
+
+# [api]
+# groq_model_llm = llama-3.3-70b-versatile
