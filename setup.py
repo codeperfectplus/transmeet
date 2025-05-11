@@ -10,7 +10,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="transmeet",
-    version="0.0.1",
+    version="0.0.2",
     author="Deepak Raj",
     author_email="deepak008@live.com",
     description=(
@@ -34,11 +34,12 @@ setup(
     install_requires=requirements,
     python_requires=">=3.6",
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Intended Audience :: Developers"
+        "Intended Audience :: Developers",
+        "Programming Language :: Python"
     ],
     project_urls={
         "Documentation": "https://transmeet.readthedocs.io/en/latest/",
@@ -51,13 +52,14 @@ setup(
         ],
     },
     keywords=[
-        "markdown",
-        "html",
-        "converter",
-        "mathjax",
-        "tailwind",
-        "latex",
-        "documentation",
+        "transcription",
+        "meeting minutes",
+        "audio processing",
+        "speech recognition",
+        "AI",
+        "machine learning",
+        "natural language processing"
+        
     ],
     license="MIT",
 )
