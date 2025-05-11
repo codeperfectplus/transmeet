@@ -58,17 +58,9 @@ def save_transcription(transcript: str, transcription_path: Path, audio_filename
     return path
 
 
-def save_meeting_minutes(llm_client, llm_model, transcript: str, meeting_datetime: datetime, meeting_minutes_path: Path, audio_filename: str) -> Path:
-    minutes = generate_meeting_minutes(transcript, llm_client, llm_model, meeting_datetime)
-
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    path = meeting_minutes_path / f"{audio_filename}_minutes_{timestamp}.md"
-    path.write_text(minutes, encoding="utf-8")
-    logger.info(f"Saved meeting minutes to {path}")
-    return path
 
 
-def generate_meeting_transcript_and_minutes(meeting_audio_file: str, output_dir,
+def generate_meeting_transcript_and_minutes(meeting_audio_file: str, 
                                             transcription_client="groq",
                                             transcription_model="whisper-large-v3-turbo",
                                             llm_client="groq",
@@ -102,18 +94,9 @@ def generate_meeting_transcript_and_minutes(meeting_audio_file: str, output_dir,
 
         logger.info("Starting transcription and meeting minutes generation...")
         logger.debug(f"Audio path: {meeting_audio_file}")
-        meeting_audio_filename = Path(meeting_audio_file).stem
 
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
-    
-        transcription_path = output_dir / "transcriptions"
-        meeting_minutes_path = output_dir / "meeting_minutes"
-
-        transcription_path.mkdir(parents=True, exist_ok=True)
-        meeting_minutes_path.mkdir(parents=True, exist_ok=True)
-        
         audio_path = Path(meeting_audio_file)
+        meeting_datetime = extract_datetime_from_filename(audio_path.name)
         
         audio = AudioSegment.from_file(audio_path)
         file_size_mb = get_audio_size_mb(audio)
@@ -124,10 +107,9 @@ def generate_meeting_transcript_and_minutes(meeting_audio_file: str, output_dir,
                                             file_size_mb=file_size_mb,
                                             audio_chunk_size_mb=audio_chunk_size_mb,
                                             audio_chunk_overlap=audio_chunk_overlap)
-        save_transcription(transcript, transcription_path, meeting_audio_filename)
+        meeting_minutes = generate_meeting_minutes(transcript, llm_client, llm_model, meeting_datetime)
 
-        meeting_datetime = extract_datetime_from_filename(audio_path.name)
-        save_meeting_minutes(llm_client, llm_model, transcript, meeting_datetime, meeting_minutes_path, meeting_audio_filename)
+        return transcript, meeting_minutes
 
     except Exception as e:
-        logger.exception("❌ Unexpected error during processing.")
+        return f"Error: {e}", "No meeting minutes generated."

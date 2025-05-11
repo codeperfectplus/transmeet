@@ -51,9 +51,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        generate_meeting_transcript_and_minutes(
+        transcript, meeting_minutes = generate_meeting_transcript_and_minutes(
             meeting_audio_file=args.audio_path,
-            output_dir=args.output_dir,
             transcription_client=args.transcription_client,
             transcription_model=args.transcription_model,
             llm_client=args.llm_client,
@@ -61,6 +60,19 @@ def main():
             audio_chunk_size_mb=args.chunk_size_mb,
             audio_chunk_overlap=args.chunk_overlap,
         )
+
+        output_dir=args.output_dir,
+        transcript_path = f"{output_dir}/transcript_{args.audio_path.split('/')[-1].split('.')[0]}.txt"
+        minutes_path = f"{output_dir}/meeting_minutes_{args.audio_path.split('/')[-1].split('.')[0]}.txt"
+
+        with open(transcript_path, "w") as f:
+            f.write(transcript)
+        print(f"✅ Transcript saved to {transcript_path}")
+        
+        with open(minutes_path, "w") as f:
+            f.write(meeting_minutes)
+        print(f"✅ Meeting minutes saved to {minutes_path}")
+
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

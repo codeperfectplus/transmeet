@@ -1,12 +1,11 @@
 
-import argparse
 from transmeet import generate_meeting_transcript_and_minutes
 
 
 if __name__ == "__main__":
 
     audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
-    generate_meeting_transcript_and_minutes(audio_path, output_dir="output",
+    transcript, meeting_minutes = generate_meeting_transcript_and_minutes(audio_path,
                                             transcription_client="groq",
                                             transcription_model="whisper-large-v3-turbo",
                                             llm_client="groq",

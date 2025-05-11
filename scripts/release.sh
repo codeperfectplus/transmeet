@@ -30,7 +30,7 @@ python setup.py sdist bdist_wheel
 check_directory dist
 python -m twine upload dist/* --verbose
 
-rm -rf dist
-rm -rf build
-rm -rf *.egg-info
-find . -name "*.pyc" -exec rm -rf {}\;
+# rm -rf dist
+# rm -rf build
+# rm -rf *.egg-info
+# find . -name "*.pyc" -exec rm -rf {}\;

@@ -1,3 +1,4 @@
 pydub
 groq
 SpeechRecognition
+openai
