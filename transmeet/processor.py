@@ -57,59 +57,74 @@ def save_transcription(transcript: str, transcription_path: Path, audio_filename
     logger.info(f"Saved transcription to {path}")
     return path
 
+def get_client(client_type: str, service_name: str):
+    """
+    Returns an initialized client or an error message if missing.
+    """
+    env_var = f"{client_type.upper()}_API_KEY"
+    api_key = os.getenv(env_var)
+
+    if not api_key:
+        return None, f"Error: {client_type.capitalize()} API key is not set, export {env_var} in your environment."
+
+    if client_type == "groq":
+        return Groq(api_key=api_key), None
+    elif client_type == "openai":
+        return OpenAI(api_key=api_key), None
+    else:
+        return None, f"Error: Unsupported {service_name} client: {client_type}"
 
 
-
-def generate_meeting_transcript_and_minutes(meeting_audio_file: str, 
-                                            transcription_client="groq",
-                                            transcription_model="whisper-large-v3-turbo",
-                                            llm_client="groq",
-                                            llm_model="llama-3.3-70b-versatile",
-                                            audio_chunk_size_mb=18,
-                                            audio_chunk_overlap=0.5):
+def generate_meeting_transcript_and_minutes(
+    meeting_audio_file: str,
+    transcription_client="groq",
+    transcription_model="whisper-large-v3-turbo",
+    llm_client="groq",
+    llm_model="llama-3.3-70b-versatile",
+    audio_chunk_size_mb=18,
+    audio_chunk_overlap=0.5
+):
     """
     Generate meeting transcript and minutes from an audio file.
-
-    Args:
-        meeting_audio_file (str): Path to the audio file.
-        output_dir (str): Directory to save the output files.
-        speech_client (str): Speech recognition client to use.
-        llm_client (str): LLM client to use for generating meeting minutes.
-        transcription_model (str): Model to use for transcription.
-        llm_model (str): Model to use for generating meeting minutes.
-    """ 
+    """
     try:
-        if llm_client == "groq":
-            llm_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        if llm_client == "openai":
-            llm_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        if transcription_client == "groq":
-            transcription_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        if transcription_client == "openai":
-            transcription_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Initialize transcription client
+        transcription_client, error = get_client(transcription_client, "transcription")
+        if error:
+            logger.error(error)
+            return error, "No meeting minutes generated."
 
-        # print llm_client name
-        logger.info(f"LLM Client: {llm_client.__class__.__name__}")
+        # Initialize LLM client
+        llm_service, error = get_client(llm_client, "llm")
+        if error:
+            logger.error(error)
+            return error, "No meeting minutes generated."
+
+        logger.info(f"LLM Client: {llm_service.__class__.__name__}")
         logger.info(f"Transcription Client: {transcription_client.__class__.__name__}")
+        logger.debug(f"Audio file path: {meeting_audio_file}")
 
-        logger.info("Starting transcription and meeting minutes generation...")
-        logger.debug(f"Audio path: {meeting_audio_file}")
-
+        # Load and analyze audio
         audio_path = Path(meeting_audio_file)
         meeting_datetime = extract_datetime_from_filename(audio_path.name)
-        
         audio = AudioSegment.from_file(audio_path)
         file_size_mb = get_audio_size_mb(audio)
 
-        transcript = handle_transcription(transcription_client=transcription_client,
-                                            transcription_model=transcription_model,
-                                            audio=audio,
-                                            file_size_mb=file_size_mb,
-                                            audio_chunk_size_mb=audio_chunk_size_mb,
-                                            audio_chunk_overlap=audio_chunk_overlap)
+        # Transcribe
+        transcript = handle_transcription(
+            transcription_client=transcription_client,
+            transcription_model=transcription_model,
+            audio=audio,
+            file_size_mb=file_size_mb,
+            audio_chunk_size_mb=audio_chunk_size_mb,
+            audio_chunk_overlap=audio_chunk_overlap
+        )
+
+        # Generate minutes
         meeting_minutes = generate_meeting_minutes(transcript, llm_client, llm_model, meeting_datetime)
 
         return transcript, meeting_minutes
 
     except Exception as e:
+        logger.error(f"Processing failed: {e}", exc_info=True)
         return f"Error: {e}", "No meeting minutes generated."
