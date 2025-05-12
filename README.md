@@ -20,9 +20,13 @@
 
 ```bash
 pip install transmeet
-````
+```
 
----
+## Dependencies
+
+```bash
+sudo apt-get update && sudo apt-get install -y ffmpeg gcc && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
+```
 
 ## 🔐 Setup
 
