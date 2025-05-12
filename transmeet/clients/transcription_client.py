@@ -13,7 +13,7 @@ from transmeet.utils.general_utils import get_logger
 
 logger = get_logger(__name__)
 
-def transcribe_with_groq(audio_segments, model_name, client):
+def transcribe_with_llm_calls(audio_segments, model_name, client):
     full_text = ""
 
     for idx, chunk in enumerate(audio_segments):

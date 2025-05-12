@@ -19,7 +19,7 @@ from transmeet.utils.audio_utils import (
 )
 
 from transmeet.clients.llm_client import generate_meeting_minutes
-from transmeet.clients.transcription_client import transcribe_with_groq, transcribe_with_google
+from transmeet.clients.transcription_client import transcribe_with_llm_calls, transcribe_with_google
 
 logger = get_logger(__name__)
 
@@ -44,7 +44,7 @@ def handle_transcription(transcription_client, transcription_model,
             chunks = [audio]
             logger.info("Audio is small enough — using Groq directly...")
 
-        return transcribe_with_groq(chunks, transcription_model, transcription_client)
+        return transcribe_with_llm_calls(chunks, transcription_model, transcription_client)
 
     logger.info("Using Google Speech Recognition...")
     return transcribe_with_google(audio)
