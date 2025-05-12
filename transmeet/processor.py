@@ -77,7 +77,7 @@ def get_client(client_type: str, service_name: str):
 
 def generate_meeting_transcript_and_minutes(
     meeting_audio_file: str,
-    transcription_service="groq",
+    transcription_client="groq",
     transcription_model="whisper-large-v3-turbo",
     llm_client="groq",
     llm_model="llama-3.3-70b-versatile",
@@ -89,19 +89,19 @@ def generate_meeting_transcript_and_minutes(
     """
     try:
         # Initialize transcription client
-        transcription_service, error = get_client(transcription_service, "transcription")
+        transcription_client, error = get_client(transcription_client, "transcription")
         if error:
             logger.error(error)
             return error, "No meeting minutes generated."
 
         # Initialize LLM client
-        llm_service, error = get_client(llm_client, "llm")
+        llm_client, error = get_client(llm_client, "llm")
         if error:
             logger.error(error)
             return error, "No meeting minutes generated."
 
-        logger.info(f"LLM Client: {llm_service.__class__.__name__}")
-        logger.info(f"Transcription Client: {transcription_service.__class__.__name__}")
+        logger.info(f"LLM Client: {llm_client.__class__.__name__}")
+        logger.info(f"Transcription Client: {transcription_client.__class__.__name__}")
         logger.debug(f"Audio file path: {meeting_audio_file}")
 
         # Load and analyze audio
@@ -112,7 +112,7 @@ def generate_meeting_transcript_and_minutes(
 
         # Transcribe
         transcript = handle_transcription(
-            transcription_client=transcription_service,
+            transcription_client=transcription_client,
             transcription_model=transcription_model,
             audio=audio,
             file_size_mb=file_size_mb,
@@ -121,7 +121,7 @@ def generate_meeting_transcript_and_minutes(
         )
 
         # Generate minutes
-        meeting_minutes = generate_meeting_minutes(transcript, llm_service, llm_model, meeting_datetime)
+        meeting_minutes = generate_meeting_minutes(transcript, llm_client, llm_model, meeting_datetime)
 
         return transcript, meeting_minutes
 
