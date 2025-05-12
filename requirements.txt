@@ -1,3 +1,4 @@
-# pydub==0.25.1 not installed
-# groq==0.24.0 not installed
-# SpeechRecognition==3.14.2 not installed
+pydub==0.25.1
+groq==0.24.0
+SpeechRecognition==3.14.2
+openai==1.78.0
