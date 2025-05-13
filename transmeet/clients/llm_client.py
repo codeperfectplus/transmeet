@@ -89,3 +89,25 @@ def generate_meeting_minutes(transcribed_text, llm_client, model_name, meeting_d
         ]
     )
     return response.choices[0].message.content.strip()
+
+
+def segment_conversation_by_speaker(transcribed_text, llm_client, model_name):
+    system_prompt = """You are an assistant tasked with segmenting a conversation by speaker.
+    Identify the speakers based on context and transitions in the dialogue. Label each speaker with a unique identifier (e.g., Speaker 1, Speaker 2, Speaker 3, etc.) 
+    and clearly divide the conversation between them. Make sure the segmentation respects the flow of the conversation and clearly marks speaker changes."""
+    
+    user_prompt = f"""
+    TRANSCRIPT TEXT: {transcribed_text}
+    Please segment the following conversation by speaker, identifying the shifts in speaker and labeling each section accordingly.
+    Ensure you handle multiple speakers and clearly mark the transitions.
+    """
+
+    response = llm_client.chat.completions.create(
+        model=model_name,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+    )
+    return response.choices[0].message.content.strip()
+

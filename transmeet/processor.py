@@ -1,4 +1,3 @@
-import argparse
 import os
 from pathlib import Path
 from datetime import datetime
@@ -18,7 +17,7 @@ from transmeet.utils.audio_utils import (
     split_audio_by_target_size,
 )
 
-from transmeet.clients.llm_client import generate_meeting_minutes
+from transmeet.clients.llm_client import generate_meeting_minutes, segment_conversation_by_speaker
 from transmeet.clients.transcription_client import transcribe_with_llm_calls, transcribe_with_google
 
 logger = get_logger(__name__)
