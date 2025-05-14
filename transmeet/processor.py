@@ -41,7 +41,7 @@ def handle_transcription(transcription_client, transcription_model,
             chunks = split_audio_by_target_size(audio, audio_chunk_size_mb, audio_chunk_overlap)
         else:
             chunks = [audio]
-            logger.info("Audio is small enough — using Groq directly...")
+            logger.info(f"Audio is small enough — using {transcription_client.__class__.__name__} to transcribe the whole file.")
 
         return transcribe_with_llm_calls(chunks, transcription_model, transcription_client)
 

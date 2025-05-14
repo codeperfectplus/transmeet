@@ -16,7 +16,7 @@ except FileNotFoundError:
 
 setup(
     name="transmeet",
-    version="0.0.11",
+    version="0.0.13",
     author="Deepak Raj",
     author_email="deepak008@live.com",
     description="LLM-powered meeting transcription and summarization tool.",

@@ -13,23 +13,61 @@ from transmeet.utils.general_utils import get_logger
 
 logger = get_logger(__name__)
 
-def transcribe_with_llm_calls(audio_segments, model_name, client):
-    full_text = ""
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import logging
 
-    for idx, chunk in enumerate(audio_segments):
-        temp_filename = export_temp_wav(chunk, "groq", idx)
-        logger.info(f"Sending chunk {idx + 1}/{len(audio_segments)} to {model_name}... for transcription using {client.__class__.__name__}")
+logger = logging.getLogger(__name__)
 
+
+def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=4):
+    """
+    Transcribes a list of audio segments using an LLM client in parallel.
+    """
+    results = [""] * len(audio_segments)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_transcribe_chunk_safe, chunk, idx, model_name, client): idx
+            for idx, chunk in enumerate(audio_segments)
+        }
+
+        for future in as_completed(futures):
+            idx, text = future.result()
+            results[idx] = text
+
+    return " ".join(results).strip()
+
+
+def _transcribe_chunk_safe(chunk, idx, model_name, client):
+    """
+    Wraps the transcription call with error handling and logging.
+    """
+    try:
+        return _transcribe_chunk(chunk, idx, model_name, client)
+    except Exception as e:
+        logger.exception(f"Failed to transcribe chunk {idx}: {e}")
+        return idx, ""
+
+
+def _transcribe_chunk(chunk, idx, model_name, client):
+    """
+    Handles exporting, sending the transcription request, and cleanup.
+    """
+    temp_filename = export_temp_wav(chunk, "groq", idx)
+    logger.info(
+        f"Transcribing chunk {idx + 1} using {client.__class__.__name__} and model '{model_name}'..."
+    )
+
+    try:
         with open(temp_filename, "rb") as f:
-            transcription = client.audio.transcriptions.create(
+            response = client.audio.transcriptions.create(
                 file=(temp_filename, f.read()),
                 model=model_name,
             )
-
+        return idx, response.text.strip()
+    finally:
         delete_file(temp_filename)
-        full_text += transcription.text.strip() + " "
 
-    return full_text.strip()
 
 def transcribe_with_google(audio, chunk_length_ms=60_000):
     recognizer = sr.Recognizer()
