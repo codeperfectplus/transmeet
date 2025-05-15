@@ -158,4 +158,3 @@ Pull requests are welcome! Found a bug or need a feature? Open an issue or submi
 ## ⚖️ License
 
 [MIT License](LICENSE)
-

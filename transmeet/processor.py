@@ -16,7 +16,7 @@ from transmeet.utils.audio_utils import (
     split_audio_by_target_size,
 )
 
-from transmeet.clients.llm_client import generate_meeting_minutes, create_podcast_dialogue
+from transmeet.clients.llm_client import generate_meeting_minutes, create_podcast_dialogue, transform_transcript_to_mind_map
 from transmeet.clients.transcription_client import transcribe_with_llm_calls, transcribe_with_google
 from transmeet.clients.audio_client import generate_podcast_audio_file
 
@@ -189,3 +189,27 @@ def synthesize_podcast_audio(
         logger.error(f"Error generating podcast audio: {e}", exc_info=True)
         return f"Error: {e}"
         
+
+
+def generate_mind_map_from_transcript(
+    transcript: str,
+    llm_client="groq",
+    llm_model="llama-3.3-70b-versatile"):
+
+    llm_client, error = get_client(llm_client)
+    if error:
+        logger.error(error)
+        return error
+
+    logger.info(f"Using mind map client: {llm_client.__class__.__name__}")
+    logger.debug(f"Generating mind map from transcript.")
+    
+    mind_map_json  = transform_transcript_to_mind_map(
+        transcript,
+        llm_client,
+        llm_model
+        
+    )
+    return mind_map_json
+
+
