@@ -1,3 +1,8 @@
+import os
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent
+
+prompts_dir = ROOT_DIR / "prompts"
 
 def generate_meeting_minutes(transcribed_text, llm_client, model_name, meeting_datetime=None):
     system_prompt = "You are an expert assistant responsible for drafting professional and concise meeting minutes."
@@ -146,3 +151,25 @@ def segment_conversation_by_speaker(transcribed_text, llm_client, model_name):
     )
     return response.choices[0].message.content.strip()
 
+def create_podcast_dialogue(transcribed_text, llm_client, model_name):
+    
+    system_prompt = """
+        You are a podcast scriptwriter skilled in converting corporate meeting transcripts into
+        engaging, two-person podcast conversations. Your tone is friendly, intelligent, and conversational,
+        designed for a general audience interested in technology, leadership, and innovation.
+        """
+    
+    with open(prompts_dir / "synteatic_audio_generation.md", "r") as f:
+        user_prompt = f.read()
+
+    user_prompt = user_prompt.replace("{transcribed_text}", transcribed_text)
+
+    response = llm_client.chat.completions.create(
+        model=model_name,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+    )
+
+    return response.choices[0].message.content.strip()

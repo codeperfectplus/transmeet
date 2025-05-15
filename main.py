@@ -1,38 +1,41 @@
 
-from transmeet.processor import generate_meeting_transcript_and_minutes, get_client, segment_conversation_by_speaker,generate_meeting_minutes
+from transmeet.processor import transcribe_audio_file, generate_podcast_script_from_transcript, synthesize_podcast_audio
 
+if __name__ == "__main__":
 
-# if __name__ == "__main__":
+    audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
+    transcript = transcribe_audio_file(
+        audio_path=audio_path,
+    )
 
-#     audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
-#     transcript, meeting_minutes = generate_meeting_transcript_and_minutes(audio_path,
-#                                             transcription_client="openai",
-#                                             transcription_model="whisper-1",
-#                                             llm_client="openai",
-#                                             llm_model="gpt-3.5-turbo",
-#     )
-
-#     print("Transcription:")
-#     print(transcript)
-#     print("\nMeeting Minutes:")
-#     print(meeting_minutes)
-
-
-if __name__ == '__main__':
-    # open transcript.txt file
-    with open('trasnscript.txt', 'r') as file:
-        transcript = file.read()
-    # segment_conversation_by_speaker
-    llm_client, error = get_client("groq", "llm")
-    trasncript = segment_conversation_by_speaker(transcript, llm_client, "llama-3.3-70b-versatile")
-
+    print("Transcription:")
+    print(transcript)
+    
     # save transcript to file
-    with open('transcript_segmented.txt', 'w') as file:
-        file.write(trasncript)
+    with open("transcript.md", "w") as f:
+        f.write(transcript)
 
-    # generate_meeting_minutes
-    meeting_minutes = generate_meeting_minutes(transcript, llm_client, "llama-3.3-70b-versatile", "2025-05-09 18:49:03")
+    # create transcript to podcast text
+    podcast_text = generate_podcast_script_from_transcript(
+        transcript=transcript,
+        podcast_client="groq",
+        podcast_model="llama-3.3-70b-versatile"
+    )
 
-    # save meeting minutes to file
-    with open('meeting_minutes.txt', 'w') as file:
-        file.write(meeting_minutes)
+    print("Podcast Text:")
+    print(podcast_text)
+
+    # save podcast text to file
+    with open("podcast.md", "w") as f:
+        f.write(podcast_text)
+
+    with open("podcast.md", "r") as f:
+        podcast_text = f.read()
+
+    # create podcast audio
+    podcast_audio = synthesize_podcast_audio(
+        podcast_text=podcast_text,
+    )
+
+    print("Podcast Audio:")
+    print(podcast_audio)
