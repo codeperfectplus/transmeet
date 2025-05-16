@@ -16,7 +16,7 @@ except FileNotFoundError:
 
 setup(
     name="transmeet",
-    version="0.0.13",
+    version="0.0.20",
     author="Deepak Raj",
     author_email="deepak008@live.com",
     description="LLM-powered meeting transcription and summarization tool.",
@@ -26,7 +26,8 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     include_package_data=True,
     package_data={
-        "transmeet": ["*.conf", "*.ini", "*.json"],
+        "transmeet": ["*.conf", "*.ini", "*.json", "*.md"],
+        "transmeet.prompts": ["*.md"],
     },
     install_requires=requirements,
     python_requires=">=3.7",

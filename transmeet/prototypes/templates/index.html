@@ -2,27 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Mind Map - Interactive</title>
-
-  <!-- Tailwind CSS CDN -->
+  <title>Improved Mind Map</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            accent: '#06b6d4',
+            bg: '#f1f5f9'
+          }
+        }
+      }
+    }
+  </script>
   <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
-
-  <!-- jsMind core CSS and JS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.4.6/style/jsmind.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.4.6/style/jsmind.css" />
   <script src="https://cdn.jsdelivr.net/npm/jsmind@0.4.6/js/jsmind.js"></script>
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
+      margin: 0; padding: 0;
+      height: 100%; background: #f1f5f9;
     }
     #jsmind_container {
-      width: 100%;
+      width: 100vw;
       height: 100vh;
+      min-height: 600px;
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 2px 24px 2px rgba(37,99,235,0.09);
+      transition: box-shadow 0.3s;
+      position:relative; z-index:1;
     }
     .tooltip {
       position: absolute;
@@ -36,119 +50,93 @@
       transition: opacity 0.3s;
       z-index: 50;
     }
+    .tooltip.active { opacity: 1; }
     .jsmind-node.selected > .jsmind-node-content {
-      background-color: #1d4ed8 !important;
+      background-color: #2563eb !important;
       color: white !important;
-      border-radius: 4px;
-      padding: 3px 8px;
+      border-radius: 6px;
+      padding: 3px 12px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px 1px rgba(37,99,235,0.11);
+      transition: background 0.2s, box-shadow 0.2s;
+      outline: 2px solid #06b6d4; outline-offset: 2px;
     }
   </style>
 </head>
-
-<body class="bg-gray-100">
-
-  <!-- Container -->
-  <div id="jsmind_container" class="relative"></div>
-
-  <!-- Floating Controls -->
-  <div class="absolute top-4 right-4 z-50 bg-white shadow-md border border-gray-200 rounded-lg p-2 flex flex-col space-y-2">
-    <button id="zoom_in" class="hover:bg-blue-100 text-blue-600 p-2 rounded" title="Zoom In">
-      <i data-feather="zoom-in"></i>
-    </button>
-    <button id="zoom_out" class="hover:bg-blue-100 text-blue-600 p-2 rounded" title="Zoom Out">
-      <i data-feather="zoom-out"></i>
-    </button>
-    <button id="zoom_reset" class="hover:bg-blue-100 text-blue-600 p-2 rounded" title="Reset Zoom">
-      <i data-feather="refresh-ccw"></i>
-    </button>
-    <input type="text" id="search_input" placeholder="Search..." class="p-1 border text-sm rounded w-full mt-2" />
-  </div>
-
-  <!-- Tooltip -->
-  <div id="tooltip" class="tooltip"></div>
+<body class="bg-bg flex items-center justify-center min-h-screen overflow-hidden">
+  <!-- Main Mind Map Container -->
+  <main class="flex-1 flex items-center justify-center min-h-screen">
+    <div id="jsmind_container" class="relative"></div>
+    <div id="tooltip" class="tooltip"></div>
+  </main>
 
   <script>
     let jm = null;
     let selectedNodeId = null;
     const tooltip = document.getElementById('tooltip');
 
-    fetch('/mindmap_data')
-      .then(res => res.json())
-      .then(data => {
-        jm = new jsMind({
-          container: 'jsmind_container',
-          theme: 'primary',
-          editable: false,
-          support_html: false,
-          view: {
-            engine: 'canvas',
-            hmargin: 100,
-            vmargin: 50,
-            line_width: 2,
-            line_color: '#555',
-            expand_level: 1
+    // Data from Flask (mindmapData is injected)
+    const mindmapData = {{ jsmind_data | safe }};
+
+    jm = new jsMind({
+      container: 'jsmind_container',
+      theme: 'primary',
+      editable: false,
+      support_html: false,
+      view: {
+        engine: 'canvas',
+        hmargin: 100,
+        vmargin: 50,
+        line_width: 2,
+        line_color: '#2563eb',
+        expand_level: 1
+      }
+    });
+    jm.show(mindmapData);
+
+    // Collapse all except root
+    jm.get_all_nodes().forEach(node => {
+      if (!node.isroot) jm.collapse_node(node.id);
+    });
+
+    // Click to expand/collapse node
+    document.getElementById('jsmind_container').addEventListener('click', e => {
+      const nodeId = jm.get_node_by_dom(e.target);
+      if (nodeId) {
+        const node = jm.get_node(nodeId);
+        jm.toggle_node(node.id);
+
+        // Manage selection style
+        if (selectedNodeId) {
+          const prev = jm.get_node(selectedNodeId);
+          if (prev && prev.element) {
+            prev.element.classList.remove('selected');
           }
-        });
+        }
+        selectedNodeId = nodeId;
+        node.element.classList.add('selected');
+        node.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
 
-        jm.show(data);
+    // Tooltip logic
+    document.getElementById('jsmind_container').addEventListener('mousemove', e => {
+      const nodeId = jm.get_node_by_dom(e.target);
+      if (nodeId) {
+        const node = jm.get_node(nodeId);
+        tooltip.classList.add('active');
+        tooltip.style.left = e.pageX + 15 + 'px';
+        tooltip.style.top = e.pageY + 10 + 'px';
+        tooltip.textContent = `Node: ${node.topic} (${node.children.length} child${node.children.length !== 1 ? "ren" : ""})`;
+      } else {
+        tooltip.classList.remove('active');
+      }
+    });
 
-        // Initially collapse all except root children
-        jm.get_all_nodes().forEach(node => {
-          if (!node.isroot) jm.collapse_node(node.id);
-        });
-
-        // Toggle node and highlight
-        document.getElementById('jsmind_container').addEventListener('click', e => {
-          const nodeId = jm.get_node_by_dom(e.target);
-          if (nodeId) {
-            const node = jm.get_node(nodeId);
-            jm.toggle_node(node.id);
-
-            if (selectedNodeId) {
-              jm.get_node(selectedNodeId)?.element.classList.remove('selected');
-            }
-            selectedNodeId = nodeId;
-            node.element.classList.add('selected');
-          }
-        });
-
-        // Tooltip logic
-        document.getElementById('jsmind_container').addEventListener('mousemove', e => {
-          const nodeId = jm.get_node_by_dom(e.target);
-          if (nodeId) {
-            const node = jm.get_node(nodeId);
-            tooltip.style.opacity = '1';
-            tooltip.style.left = e.pageX + 10 + 'px';
-            tooltip.style.top = e.pageY + 10 + 'px';
-            tooltip.textContent = `Node: ${node.topic}\nChildren: ${node.children.length}`;
-          } else {
-            tooltip.style.opacity = '0';
-          }
-        });
-
-        // Zoom controls
-        document.getElementById('zoom_in').onclick = () => jm.view.zoomIn();
-        document.getElementById('zoom_out').onclick = () => jm.view.zoomOut();
-        document.getElementById('zoom_reset').onclick = () => jm.view.zoomReset();
-
-        // Search feature
-        document.getElementById('search_input').addEventListener('input', e => {
-          const keyword = e.target.value.trim().toLowerCase();
-          jm.get_all_nodes().forEach(node => {
-            if (node.topic.toLowerCase().includes(keyword)) {
-              jm.select_node(node.id);
-              jm.expand_node(node.id);
-              node.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              return;
-            }
-          });
-        });
-      })
-      .catch(err => {
-        console.error('Failed to load mindmap:', err);
-      });
-
-    // Activate icons
+    document.getElementById('jsmind_container').addEventListener('mouseleave', () => {
+      tooltip.classList.remove('active');
+    });
+    // Icon updates
     feather.replace();
   </script>
 </body>

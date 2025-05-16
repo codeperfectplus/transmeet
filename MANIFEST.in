@@ -1,3 +1,4 @@
 include README.md
 include requirements.txt
 recursive-include transmeet *.json *.conf *.ini
+recursive-include transmeet/prompts *.md
