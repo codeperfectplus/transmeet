@@ -228,20 +228,44 @@ def transform_transcript_to_mind_map(transcribed_text, llm_client, model_name):
 
         TRANSCRIPT: {transcribed_text}
 
-        The output should be structured in JSON like:
+        > **🧠 Prompt: Generate Hierarchical Mind Map from Transcript**
+        >
+        > Given the following transcript, generate a **mind map** as a valid **JSON object**.
+        >
+        > ### ✅ Requirements:
+        >
+        > 1. **Extract the central theme** or **main topic** of the transcript and use it as the value for the `"Root Topic"` key.
+        >
+        > 2. Create **logical, high-level topics** directly under the root.
+        >
+        > 3. Under each topic:
+        >
+        >    * Identify **subtopics** as nested keys.
+        >    * Each subtopic should have an **array of detailed, logically related points**.
+        >
+        > 4. Your output **must strictly follow this structure**:
+        >
+        > ```json
+        > {
+        >   "Root Topic": "Main subject derived from transcript",
+        >   "Topic 1": {
+        >     "Subtopic 1": ["Point 1", "Point 2"],
+        >     "Subtopic 2": ["Point 1"]
+        >   },
+        >   "Topic 2": {
+        >     "Subtopic 1": ["Point 1", "Point 2"],
+        >     "Subtopic 2": ["Point 1"]
+        >   }
+        > }
+        > ```
+        >
+        > ### ⚠️ Rules:
+        >
+        > * Do **not** use placeholder labels like `"Topic 1"` or `"Subtopic 1"` in the actual output — instead, use the **real names/content** from the transcript.
+        > * Ensure the hierarchy flows from **general → specific**.
+        > * Avoid redundancy and keep points **concise yet informative**.
+        > * Output **only valid JSON** with proper quotation and formatting.
 
-        {   
-            "Root Topic": root_topic,
-            "Topic 1": {
-                "Subtopic 1": ["Point 1", "Point 2"],
-                "Subtopic 2": ["Point 1"]
-            },
-            "Topic 2": {
-                "Subtopic 1": ["Point 1", "Point 2"],
-                "Subtopic 2": ["Point 1"]
-            }
-            ... so on
-        }
         """
     user_prompt = user_prompt.replace("{transcribed_text}", transcribed_text)
 
@@ -256,8 +280,6 @@ def transform_transcript_to_mind_map(transcribed_text, llm_client, model_name):
 
     # Parsing and returning the mind map output
     mind_map = response.choices[0].message.content.strip()
-
-    print(mind_map)
 
     # Optionally convert the result into a dictionary (JSON)
     mind_map_json = extract_json_from_text(mind_map)

@@ -6,23 +6,23 @@ import json
 
 if __name__ == "__main__":
 
-    audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
-    transcript = transcribe_audio_file(
-        audio_path=audio_path,
-    )
+    # audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
+    # transcript = transcribe_audio_file(
+    #     audio_path=audio_path,
+    # )
 
-    print("Transcription:")
-    print(transcript)
+    # print("Transcription:")
+    # print(transcript)
 
 
     
     # save transcript to file
-    with open("transcript.md", "w") as f:
-        f.write(transcript)
+    # with open("transcript.md", "w") as f:
+    #     f.write(transcript)
 
     # transcript.md
-    # with open("transcript.md", "r") as f:
-    #     transcript = f.read()
+    with open("transcript.md", "r") as f:
+        transcript = f.read()
 
     mind_map_json = generate_mind_map_from_transcript(
         transcript=transcript,
