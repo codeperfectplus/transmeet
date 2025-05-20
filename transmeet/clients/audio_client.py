@@ -1,39 +1,36 @@
 import os
-from re import S
 import uuid
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from elevenlabs.client import ElevenLabs
 from pydub import AudioSegment
+from groq import Groq
 
 # === Configuration ===
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 OUTPUT_DIR = "podcast_audio"
-MAX_WORKERS = 4  # Parallel audio generations
-
-# Generate a unique prefix for this run
-
+MAX_WORKERS = 2  # Parallel audio generations
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # === Voice Mapping ===
 VOICE_MAP = {
-    "Alex": "Jerry B. - Hyper-Real & Conversational",
-    "Jamie": "Zara - Sweet & Gentle Companion"
+    "Jerry": {
+        "elevenlabs": "Jerry B. - Hyper-Real & Conversational",
+        "groq": "Fritz-PlayAI"  # You can change this based on Groq-supported voices
+    },
+    "Christina": {
+        "elevenlabs": "Christina - Natural & Conversational",
+        "groq": "Aaliyah-PlayAI"
+    }
 }
 
-# === Setup ===
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+# === Clients ===
+eleven_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+groq_client = Groq()
 
 
 def parse_podcast_script(script_text):
-    """
-    Parses the podcast script text to extract title and speaker lines.
-
-    Args:
-        script_text (str): The full markdown-formatted script content.
-
-    Returns:
-        tuple: (title, list of (speaker, line) tuples)
-    """
     lines = script_text.strip().splitlines()
     title = ""
     dialogues = []
@@ -41,65 +38,82 @@ def parse_podcast_script(script_text):
 
     for i, line in enumerate(lines):
         line = line.strip()
-
-        # Parse title
-        if line.startswith("## Podcast Title"):
-            if i + 1 < len(lines):
-                title = lines[i + 1].strip()
-        
-        # Begin processing lines only after the "## Podcast Script" header
+        if line.startswith("## Podcast Title") and i + 1 < len(lines):
+            title = lines[i + 1].strip()
         elif line.startswith("## Podcast Script"):
             recording_script = True
             continue
         elif line.startswith("## Outro") or line.startswith("## Key Takeaways"):
             recording_script = False
 
-        # Parse dialogues after "## Podcast Script"
         if recording_script and ':' in line:
             speaker, text = line.split(":", 1)
-            speaker = speaker.strip()
-            text = text.strip()
+            speaker, text = speaker.strip(), text.strip()
             if speaker in VOICE_MAP:
                 dialogues.append((speaker, text))
 
     return title, dialogues
 
 
-def synthesize_speaker_audio(speaker, text, index, SESSION_ID):
-    voice = VOICE_MAP.get(speaker)
-    if not voice:
-        raise ValueError(f"No voice defined for speaker: {speaker}")
-    
-    filename = os.path.join(OUTPUT_DIR, f"{SESSION_ID}_line_{index:03}_{speaker}.mp3")
-    print(f"🔊 Generating [{index:03}] {speaker}: '{text[:60]}...'")
+def synthesize_with_elevenlabs(speaker, text, index, session_id):
+    voice = VOICE_MAP[speaker]["elevenlabs"]
+    filename = os.path.join(OUTPUT_DIR, f"{session_id}_line_{index:03}_{speaker}.mp3")
+    print(f"🔊 [ElevenLabs] Generating [{index:03}] {speaker}: '{text[:60]}...'")
 
     try:
-        audio_stream = client.generate(
+        audio_stream = eleven_client.generate(
             text=text,
             voice=voice,
             model="eleven_multilingual_v2",
             stream=True
         )
-
         with open(filename, "wb") as f:
             for chunk in audio_stream:
                 f.write(chunk)
+        return filename
+    except Exception as e:
+        print(f"❌ Error generating with ElevenLabs for line {index}: {e}")
+        return None
+
+
+def synthesize_with_groq(speaker, text, index, session_id):
+    voice = VOICE_MAP[speaker]["groq"]
+    filename = os.path.join(OUTPUT_DIR, f"{session_id}_line_{index:03}_{speaker}.wav")
+    print(f"🔊 [Groq] Generating [{index:03}] {speaker}: '{text[:60]}...'")
+
+    try:
+        response = groq_client.audio.speech.create(
+            model="playai-tts",
+            voice=voice,
+            response_format="wav",
+            input=text
+        )
+
+        with open(filename, "wb") as f:
+            f.write(response.content)
 
         return filename
 
     except Exception as e:
-        print(f"❌ Error generating audio for line {index}: {e}")
+        print(f"❌ Error generating with Groq for line {index}: {e}")
         return None
 
 
-def synthesize_all_dialogues(dialogues, SESSION_ID):
+
+def synthesize_all_dialogues(dialogues, session_id, provider):
     audio_files = []
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {
-            executor.submit(synthesize_speaker_audio, speaker, text, i, SESSION_ID): i
-            for i, (speaker, text) in enumerate(dialogues)
-        }
+        futures = {}
+        for i, (speaker, text) in enumerate(dialogues):
+            if provider == "elevenlabs":
+                func = synthesize_with_elevenlabs
+            elif provider == "groq":
+                func = synthesize_with_groq
+            else:
+                raise ValueError(f"Unknown provider: {provider}")
+
+            futures[executor.submit(func, speaker, text, i, session_id)] = i
 
         for future in as_completed(futures):
             result = future.result()
@@ -125,16 +139,25 @@ def merge_audio_segments(files, output_file):
     return output_file
 
 
-def generate_podcast_audio_file(podcast_script):
-    SESSION_ID = uuid.uuid4().hex[:8]
+def generate_podcast_audio_file(podcast_script, provider="elevenlabs"):
+    session_id = uuid.uuid4().hex[:8]
     _, dialogues = parse_podcast_script(podcast_script)
-    audio_files = synthesize_all_dialogues(dialogues, SESSION_ID)
-    final_output = os.path.join(OUTPUT_DIR, f"{SESSION_ID}_final_podcast.mp3")
-    output_file = merge_audio_segments(audio_files, final_output)
-    return output_file
+    audio_files = synthesize_all_dialogues(dialogues, session_id, provider)
+    final_output = os.path.join(OUTPUT_DIR, f"{session_id}_final_podcast.mp3")
+    return merge_audio_segments(audio_files, final_output)
 
 
 if __name__ == "__main__":
-    with open('trasnscript.txt', 'r') as file:
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument("--provider", choices=["elevenlabs", "groq"], default="elevenlabs", help="Choose the TTS provider.")
+    parser.add_argument("--script", default="trasnscript.txt", help="Path to the podcast transcript file.")
+
+    args = parser.parse_args()
+
+    with open(args.script, 'r') as file:
         podcast_script = file.read()
-    generate_podcast_audio_file(podcast_script)
+
+    output = generate_podcast_audio_file(podcast_script, provider=args.provider)
+    print(f"\n✅ Podcast generated: {output}")

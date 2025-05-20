@@ -160,9 +160,9 @@ def generate_podcast_script_from_transcript(
         logger.error(f"Error generating podcast script: {e}", exc_info=True)
         return f"Error: {e}"
 
-def synthesize_podcast_audio(podcast_text: str):
+def synthesize_podcast_audio(podcast_text: str, provider: str = "groq") -> str:
     try:
-        return generate_podcast_audio_file(podcast_text)
+        return generate_podcast_audio_file(podcast_text, provider)
     except Exception as e:
         logger.error(f"Error generating podcast audio: {e}", exc_info=True)
         return f"Error: {e}"

@@ -36,5 +36,4 @@ def get_logger(name: str = __name__):
         logger.addHandler(console_handler)
 
     logger.propagate = False
-    logger.debug(f"Logger initialized for {name}")
     return logger
