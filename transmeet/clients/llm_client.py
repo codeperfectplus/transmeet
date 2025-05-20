@@ -9,7 +9,7 @@ def generate_meeting_minutes(
     system_prompt = "You are an expert assistant responsible for drafting professional and concise meeting minutes."
 
     user_prompt = f"""
-    TRANSCRIPT:
+        Meeting Transcription: 
 
         {transcribed_text}
 
@@ -24,11 +24,11 @@ def generate_meeting_minutes(
         - Extract all participants mentioned or inferred.
         - Use chain-of-thought reasoning to resolve references like "he", "PM", "the intern", etc.
 
-        1. **Product & Project Identification**  
+        2. **Product & Project Identification**  
         - Detect product names, abbreviations, internal tools, or code names.
         - Include inferred or indirectly mentioned tools/platforms.
 
-        1. **Smart Inference & Contextual Understanding**  
+        3. **Smart Inference & Contextual Understanding**  
         - Extract structured insights like roles, decisions, blockers, and tasks, even when they are implicit.
 
         ---
@@ -40,13 +40,14 @@ def generate_meeting_minutes(
         Follow **this exact structure** and formatting guidance:
 
         ---
+        ## 📝 Meeting Minutes
 
-        ## 📝 Meeting Title
-        - *A concise, meaningful title capturing the central focus of the meeting.*
-
-        ## 🗓️ Date and Time
-        - **{meeting_datetime}**
-
+        - **Meeting Title**: *Title derived from the transcript or inferred context*
+        - **Date & Time**: *Date and time of the meeting*
+        - **Participants**: Abc, Xyz, etc. (list all participants)
+        - **Meeting Type**: *Type of meeting (e.g., Standup, Retrospective, etc.)*
+        - **Meeting Notes**: *Any additional notes or context*
+        
         ## 📌 Agenda Topics Discussed
         - Bullet list of primary topics.
         - Break them into logical segments using `**bold**` emphasis if needed.
@@ -97,7 +98,7 @@ def generate_meeting_minutes(
         - Summarize participant feedback.
         - Include who said it and any follow-up steps.
 
-        ## 😂 Funny Moments or Anecdotes
+        ## 😂 Funny Moments or Anecdotes(Add only if exists) otherwise don't add this section
 
         - A moment or quote that lightened the mood.
         - Optional emojis or reactions allowed (`😅`, `🎉`, etc.).
@@ -107,7 +108,7 @@ def generate_meeting_minutes(
         > A final paragraph (3–5 sentences) summarizing:
         > - The purpose of the meeting.
         > - Key topics discussed.
-        > - Major outcomes.
+        > - Major outcomes. 
         > - Next steps.
 
         ---
