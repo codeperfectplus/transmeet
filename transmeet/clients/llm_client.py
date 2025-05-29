@@ -1,3 +1,4 @@
+# cython: language_level=3
 from datetime import datetime
 
 from transmeet.utils.json_parser import extract_json_from_text

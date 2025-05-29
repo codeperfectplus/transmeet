@@ -1,3 +1,4 @@
+# cython: language_level=3
 import math
 from venv import logger
 from groq import Groq

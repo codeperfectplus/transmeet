@@ -1,3 +1,4 @@
+# cython: language_level=3
 from setuptools import setup, find_packages
 
 # Load the long description from README.md if it exists

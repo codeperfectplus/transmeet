@@ -1,3 +1,4 @@
+# cython: language_level=3
 from flask import Flask, render_template, request, jsonify
 import uuid
 import json

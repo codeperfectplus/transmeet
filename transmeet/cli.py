@@ -1,3 +1,4 @@
+# cython: language_level=3
 import argparse
 import sys
 from transmeet import generate_meeting_transcript_and_minutes

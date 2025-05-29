@@ -1,6 +1,10 @@
+# cython: language_level=3
 import os
+from pathlib import Path
 
-# get GROQ_API_KEY from environment variable
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+filepath = "/home/admin/Documents/MeetingSummarizer/transmeet/clients/transcription_client.py"
 
-print(GROQ_API_KEY)
+# get the file name from the path
+filename = Path(filepath).stem
+# remove extension
+print(filename)

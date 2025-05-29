@@ -1,3 +1,4 @@
+# cython: language_level=3
 from pathlib import Path
 
 def get_audio_size_mb(audio_segment):

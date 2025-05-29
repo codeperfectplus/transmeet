@@ -1,3 +1,4 @@
+# cython: language_level=3
 import json
 import re
 from typing import Dict, Any

@@ -1,3 +1,4 @@
+# cython: language_level=3
 
 from transmeet.processor import transcribe_audio_file, generate_podcast_script_from_transcript, synthesize_podcast_audio, generate_mind_map_from_transcript
 import os
@@ -24,25 +25,25 @@ if __name__ == "__main__":
     with open("transcript.md", "r") as f:
         transcript = f.read()
 
-    mind_map_json = generate_mind_map_from_transcript(
-        transcript=transcript,
-        llm_client="groq",
-        llm_model="llama-3.3-70b-versatile"
+    # mind_map_json = generate_mind_map_from_transcript(
+    #     transcript=transcript,
+    #     llm_client="groq",
+    #     llm_model="llama-3.3-70b-versatile"
         
-    )
+    # )
 
-    print("Mind Map JSON:")
-    print(mind_map_json)
+    # print("Mind Map JSON:")
+    # print(mind_map_json)
 
-    with open("mind_map.json", "w") as f:
-        json.dump(mind_map_json, f, indent=4)
+    # with open("mind_map.json", "w") as f:
+    #     json.dump(mind_map_json, f, indent=4)
     
 
     # # create transcript to podcast text
     # podcast_text = generate_podcast_script_from_transcript(
     #     transcript=transcript,
-    #     podcast_client="groq",
-    #     podcast_model="llama-3.3-70b-versatile"
+    #     llm_client="groq",
+    #     llm_model="llama-3.3-70b-versatile"
     # )
 
     # print("Podcast Text:")
@@ -52,13 +53,14 @@ if __name__ == "__main__":
     # with open("podcast.md", "w") as f:
     #     f.write(podcast_text)
 
-    # with open("podcast.md", "r") as f:
-    #     podcast_text = f.read()
+    with open("podcast.md", "r") as f:
+        podcast_text = f.read()
 
-    # # create podcast audio
-    # podcast_audio = synthesize_podcast_audio(
-    #     podcast_text=podcast_text,
-    # )
+    # create podcast audio
+    podcast_audio = synthesize_podcast_audio(
+        podcast_text=podcast_text,
+        provider="groq"
+    )
 
-    # print("Podcast Audio:")
-    # print(podcast_audio)
+    print("Podcast Audio:")
+    print(podcast_audio)
