@@ -21,7 +21,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-MAX_CALLS_PER_MINUTE = 19
+MAX_CALLS_PER_MINUTE = 20
 TIME_WINDOW = 60  # in seconds
 call_times = deque()
 rate_lock = Lock()
@@ -56,7 +56,7 @@ def _transcribe_chunk_safe(chunk, idx, model_name, client):
         return idx, ""
 
 
-def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=4):
+def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=20):
     """
     Transcribes a list of audio segments using an LLM client in parallel, rate-limited to 19 calls/minute.
     """
