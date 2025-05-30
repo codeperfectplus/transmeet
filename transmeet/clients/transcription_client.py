@@ -3,7 +3,9 @@ import math
 from venv import logger
 from groq import Groq
 import speech_recognition as sr
-
+from collections import deque
+from threading import Lock
+import time
 
 from transmeet.utils.file_utils import (
     export_temp_wav,
@@ -19,10 +21,44 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAX_CALLS_PER_MINUTE = 19
+TIME_WINDOW = 60  # in seconds
+call_times = deque()
+rate_lock = Lock()
+
+def wait_for_rate_limit():
+    with rate_lock:
+        now = time.time()
+        # Remove expired timestamps
+        while call_times and now - call_times[0] > TIME_WINDOW:
+            call_times.popleft()
+
+        if len(call_times) >= MAX_CALLS_PER_MINUTE:
+            wait_time = TIME_WINDOW - (now - call_times[0])
+            print(f"[RateLimit] Hit 19 calls. Sleeping {wait_time:.2f} seconds...")
+            time.sleep(wait_time)
+            call_times.popleft()
+
+        call_times.append(time.time())
+
+def rate_limited(func):
+    def wrapper(*args, **kwargs):
+        wait_for_rate_limit()
+        return func(*args, **kwargs)
+    return wrapper
+
+@rate_limited
+def _transcribe_chunk_safe(chunk, idx, model_name, client):
+    try:
+        return _transcribe_chunk(chunk, idx, model_name, client)
+    except Exception as e:
+        logger.exception(f"Failed to transcribe chunk {idx}: {e}")
+        return idx, ""
+
 
 def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=4):
     """
-    Transcribes a list of audio segments using an LLM client in parallel.
+    Transcribes a list of audio segments using an LLM client in parallel, rate-limited to 19 calls/minute.
     """
     results = [""] * len(audio_segments)
 
@@ -37,17 +73,6 @@ def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=4)
             results[idx] = text
 
     return " ".join(results).strip()
-
-
-def _transcribe_chunk_safe(chunk, idx, model_name, client):
-    """
-    Wraps the transcription call with error handling and logging.
-    """
-    try:
-        return _transcribe_chunk(chunk, idx, model_name, client)
-    except Exception as e:
-        logger.exception(f"Failed to transcribe chunk {idx}: {e}")
-        return idx, ""
 
 
 def _transcribe_chunk(chunk, idx, model_name, client):
