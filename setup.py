@@ -1,37 +1,50 @@
 # cython: language_level=3
+import os
 from setuptools import setup, find_packages
+from fetch_and_bump_version import get_incremented_version
 
-# Load the long description from README.md if it exists
-try:
-    with open("README.md", "r", encoding="utf-8") as fh:
-        long_description = fh.read()
-except FileNotFoundError:
-    long_description = "Transmeet is a Python package that transcribes audio files and generates meeting minutes using advanced AI models."
+# ---------------------- Package Metadata ---------------------- #
 
-# Load dependencies from requirements.txt
-try:
-    with open("requirements.txt", "r", encoding="utf-8") as fh:
-        requirements = fh.read().splitlines()
-except FileNotFoundError:
-    requirements = []
+PACKAGE_NAME = "transmeet"
+AUTHOR = "Deepak Raj"
+AUTHOR_EMAIL = "deepak008@live.com"
+DESCRIPTION = "LLM-powered meeting transcription and summarization tool."
+PYTHON_REQUIRES = ">=3.8"
+GITHUB_USER = "codeperfectplus"
+GITHUB_URL = f"https://github.com/{GITHUB_USER}/{PACKAGE_NAME}"
+DOCS_URL = f"https://{PACKAGE_NAME}.readthedocs.io/en/latest/"
 
+# ---------------------- Utility Functions ---------------------- #
+
+def load_file_content(file_path):
+    """Read and return the contents of a file if it exists."""
+    if os.path.exists(file_path):
+        with open(file_path, encoding="utf-8") as f:
+            return f.read().strip()
+    return ""
+
+def load_requirements(file_path):
+    """Parse requirements from a file."""
+    content = load_file_content(file_path)
+    return content.splitlines() if content else []
+
+# ---------------------- Setup Execution ---------------------- #
 setup(
-    name="transmeet",
-    version="0.0.23",
-    author="Deepak Raj",
-    author_email="deepak008@live.com",
-    description="LLM-powered meeting transcription and summarization tool.",
-    long_description=long_description,
+    name=PACKAGE_NAME,
+    version=get_incremented_version(PACKAGE_NAME),
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    description=DESCRIPTION,
+    long_description=load_file_content("README.md") or DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/codeperfectplus/transmeet",
+    url=GITHUB_URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     include_package_data=True,
     package_data={
-        "transmeet": ["*.conf", "*.ini", "*.json", "*.md"],
-        "transmeet.prompts": ["*.md"],
+        "transmeet": ["*.conf", "*.ini", "*.json", "prompts/*"]
     },
-    install_requires=requirements,
-    python_requires=">=3.7",
+    install_requires= load_requirements("requirements.txt"),
+    python_requires= PYTHON_REQUIRES,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",
@@ -58,6 +71,7 @@ setup(
         "Google Speech",
         "CLI",
         "automation",
+        "speak2summary"
     ],
     project_urls={
         "Source": "https://github.com/codeperfectplus/transmeet",

@@ -15,6 +15,7 @@ from transmeet.clients.llm_client import (
     generate_meeting_minutes,
     create_podcast_dialogue,
     transform_transcript_to_mind_map,
+    segment_conversation_by_speaker
 )
 from transmeet.clients.transcription_client import (
     transcribe_with_llm_calls,
@@ -166,4 +167,22 @@ def synthesize_podcast_audio(podcast_text: str, provider: str = "groq") -> str:
         return generate_podcast_audio_file(podcast_text, provider)
     except Exception as e:
         logger.error(f"Error generating podcast audio: {e}", exc_info=True)
+        return f"Error: {e}"
+
+
+# segment_conversation_by_speaker
+def segment_speech_by_speaker(
+    transcript: str,
+    llm_client: str = "groq",
+    llm_model: str = "llama-3.3-70b-versatile"
+) -> str:
+    try:
+        client, error = get_client(llm_client)
+        if error:
+            logger.error(error)
+            return error
+        logger.info(f"Using LLM client: {client.__class__.__name__} for speaker segmentation.")
+        return segment_conversation_by_speaker(transcript, client, llm_model)
+    except Exception as e:
+        logger.error(f"Error segmenting speech by speaker: {e}", exc_info=True)
         return f"Error: {e}"

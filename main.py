@@ -1,6 +1,6 @@
 # cython: language_level=3
 
-from transmeet.processor import transcribe_audio_file, generate_podcast_script_from_transcript, synthesize_podcast_audio, generate_mind_map_from_transcript
+from transmeet.processor import transcribe_audio_file, generate_podcast_script_from_transcript, synthesize_podcast_audio, generate_mind_map_from_transcript, segment_speech_by_speaker
 import os
 import json
 
@@ -24,6 +24,20 @@ if __name__ == "__main__":
     # transcript.md
     with open("transcript.md", "r") as f:
         transcript = f.read()
+    
+    # segment conversation by speaker
+    segmented_transcript = segment_speech_by_speaker(
+        transcript=transcript,
+        llm_client="groq",
+        llm_model="llama-3.3-70b-versatile"
+    )
+
+    print("Segmented Transcript:")
+    # print(segmented_transcript)
+
+    # save segmented transcript to file
+    with open("segmented_transcript.md", "w") as f:
+        f.write(segmented_transcript)
 
     # mind_map_json = generate_mind_map_from_transcript(
     #     transcript=transcript,
@@ -53,14 +67,14 @@ if __name__ == "__main__":
     # with open("podcast.md", "w") as f:
     #     f.write(podcast_text)
 
-    with open("podcast.md", "r") as f:
-        podcast_text = f.read()
+    # with open("podcast.md", "r") as f:
+    #     podcast_text = f.read()
 
-    # create podcast audio
-    podcast_audio = synthesize_podcast_audio(
-        podcast_text=podcast_text,
-        provider="groq"
-    )
+    # # create podcast audio
+    # podcast_audio = synthesize_podcast_audio(
+    #     podcast_text=podcast_text,
+    #     provider="groq"
+    # )
 
-    print("Podcast Audio:")
-    print(podcast_audio)
+    # print("Podcast Audio:")
+    # print(podcast_audio)

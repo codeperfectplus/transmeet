@@ -139,9 +139,27 @@ def segment_conversation_by_speaker(transcribed_text, llm_client, model_name):
     and clearly divide the conversation between them. Make sure the segmentation respects the flow of the conversation and clearly marks speaker changes."""
 
     user_prompt = f"""
-    TRANSCRIPT TEXT: {transcribed_text}
-    Please segment the following conversation by speaker, identifying the shifts in speaker and labeling each section accordingly.
-    Ensure you handle multiple speakers and clearly mark the transitions.
+        You are given a raw transcript of a multi-speaker conversation with no speaker labels or punctuation-based cues.
+
+        Your task is to:
+        1. Segment the transcript by identifying changes in speaker based on context, tone, and content.
+        2. Clearly label each part using generic identifiers like Speaker 1, Speaker 2, etc.
+        3. Maintain the natural flow of conversation.
+        4. If a speaker talks multiple times, reuse their label (do not assign a new number each time).
+        5. Do not add any additional commentary or explanations, just the segmented dialogue.
+        6. Ensure the output is formatted as a dialogue with clear speaker labels.
+        7. Identify the leading speaker based on the context of the conversation and label them as Speaker 1.
+
+        Format your output as follows:
+
+        Speaker 1: [First speaker's dialogue]  
+        Speaker 2: [Next speaker's dialogue]  
+        Speaker 1: [Speaker 1 again if they speak next]  
+        ...
+
+        Here is the transcript text:  
+        {transcribed_text}
+
     """
 
     response = llm_client.chat.completions.create(
