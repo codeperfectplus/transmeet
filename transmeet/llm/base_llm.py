@@ -1,15 +1,23 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+
+class LLMTokenObserver(ABC):
+    @abstractmethod
+    def notify(self, event_type: str, content: str, timestamp: datetime):
+        pass
+
 
 class BaseLLMClass(ABC):
-    
+    def __init__(self):
+        self._observers = []
+
+    def attach_observer(self, observer: LLMTokenObserver):
+        self._observers.append(observer)
+
+    def notify_observers(self, event_type: str, content: str):
+        for observer in self._observers:
+            observer.notify(event_type, content, datetime.now())
+
     @abstractmethod
     def generate_response(self, model_name, system_prompt, user_prompt):
-        """
-        Generate a response using the LLM API.
-
-        :param model_name: The name of the model to use.
-        :param system_prompt: The system prompt to set the context.
-        :param user_prompt: The user's input for which a response is generated.
-        :return: The generated response from the model.
-        """
         raise NotImplementedError("This method should be overridden by subclasses.")

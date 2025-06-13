@@ -1,6 +1,6 @@
 from transmeet.utils.json_parser import extract_json_from_text
 from transmeet.utils.prompt_loader import load_prompt
-from transmeet.llm.manager import LLMManager
+from transmeet.llm.llm_manager import LLMManager
 
 
 def generate_meeting_minutes(llm_client, transcribed_text, model_name, meeting_datetime=None):
