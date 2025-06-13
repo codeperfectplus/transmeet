@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 class BaseLLMClass(ABC):
+    
     @abstractmethod
     def generate_response(self, model_name, system_prompt, user_prompt):
         """

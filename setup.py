@@ -41,7 +41,7 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     include_package_data=True,
     package_data={
-        "transmeet": ["*.conf", "*.ini", "*.json", "prompts/*"]
+        "transmeet": ["*.conf", "*.ini", "*.json", "prompts/**/*"],
     },
     install_requires= load_requirements("requirements.txt"),
     python_requires= PYTHON_REQUIRES,
