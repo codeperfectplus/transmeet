@@ -13,7 +13,7 @@ class OpenAIClient(BaseLLMClass):
         llm_client = OpenAI()
         return llm_client
     
-    def generate(self, model_name, system_prompt, user_prompt):
+    def generate_response(self, model_name, system_prompt, user_prompt):
         """
         Generate a response using the OpenAI API.
 

@@ -8,7 +8,7 @@ def generate_meeting_minutes(llm_client, transcribed_text, model_name, meeting_d
     user_prompt = load_prompt("meeting_minutes", "user").replace("{transcribed_text}", transcribed_text).replace("{meeting_datetime}", meeting_datetime or "")
 
     manager = LLMManager(provider=llm_client)
-    return manager.generate(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
+    return manager.generate_response(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
 
 
 def segment_conversation_by_speaker(llm_client, transcribed_text, model_name):
@@ -16,7 +16,7 @@ def segment_conversation_by_speaker(llm_client, transcribed_text, model_name):
     user_prompt = load_prompt("speaker_segmentation", "user").replace("{transcribed_text}", transcribed_text)
 
     manager = LLMManager(provider=llm_client)
-    return manager.generate(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
+    return manager.generate_response(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
 
 
 def create_podcast_dialogue(llm_client, transcribed_text, model_name):
@@ -24,7 +24,7 @@ def create_podcast_dialogue(llm_client, transcribed_text, model_name):
     user_prompt = load_prompt("podcast_script", "user").replace("{transcribed_text}", transcribed_text)
 
     manager = LLMManager(provider=llm_client)
-    return manager.generate(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
+    return manager.generate_response(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
 
 
 def transform_transcript_to_mind_map(llm_client, transcribed_text, model_name):
@@ -32,7 +32,7 @@ def transform_transcript_to_mind_map(llm_client, transcribed_text, model_name):
     user_prompt = load_prompt("mind_map", "user").replace("{transcribed_text}", transcribed_text)
 
     manager = LLMManager(provider=llm_client)
-    response = manager.generate(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
+    response = manager.generate_response(model_name=model_name, system_prompt=system_prompt, user_prompt=user_prompt)
 
     if not response:
         raise ValueError("The LLM did not return a valid response.")

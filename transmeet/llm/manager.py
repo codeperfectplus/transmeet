@@ -25,7 +25,7 @@ class LLMManager:
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
 
-    def generate(self, model_name, system_prompt, user_prompt):
+    def generate_response(self, model_name, system_prompt, user_prompt):
         """
         Generate a response using the specified model and prompts.
 
@@ -34,4 +34,4 @@ class LLMManager:
         :param user_prompt: The user's input for which a response is generated.
         :return: The generated response from the model.
         """
-        return self.llm_client.generate(model_name, system_prompt, user_prompt)
+        return self.llm_client.generate_response(model_name, system_prompt, user_prompt)
