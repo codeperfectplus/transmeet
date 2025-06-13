@@ -20,3 +20,13 @@ class OpenAIClient(BaseLLMClass):
         if content is not None:
             self.notify_observers("output", content)
             return content.strip()
+
+    def transcribe_audio_file(self, file_path: str, model_name: str) -> str:
+        client = self.get_llm_client()
+        with open(file_path, "rb") as f:
+            response = client.audio.transcriptions.create(
+                file=(file_path, f.read()),
+                model=model_name,
+            )
+        self.notify_observers("Output", response.text.strip())
+        return response.text.strip()

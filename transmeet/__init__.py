@@ -4,7 +4,8 @@ from transmeet.processor import (
     generate_meeting_minutes_from_transcript, 
     generate_podcast_script_from_transcript, 
     synthesize_podcast_audio,
-    generate_mind_map_from_transcript
+    generate_mind_map_from_transcript,
+    segment_conversation_by_speaker
 )
 
 __all__ = [
@@ -12,5 +13,6 @@ __all__ = [
     "generate_meeting_minutes_from_transcript",
     "generate_podcast_script_from_transcript",
     "synthesize_podcast_audio",
-    "generate_mind_map_from_transcript"
+    "generate_mind_map_from_transcript",
+    "segment_conversation_by_speaker"
 ]

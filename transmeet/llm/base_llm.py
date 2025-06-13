@@ -21,3 +21,6 @@ class BaseLLMClass(ABC):
     @abstractmethod
     def generate_response(self, model_name, system_prompt, user_prompt):
         raise NotImplementedError("This method should be overridden by subclasses.")
+
+    def transcribe_audio_file(self, file_path: str, model_name: str) -> str:
+        raise NotImplementedError("Audio transcription not supported by this LLM.")

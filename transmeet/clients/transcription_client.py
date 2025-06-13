@@ -7,6 +7,7 @@ import time
 
 from pydub import AudioSegment
 
+from transmeet.llm.llm_manager import LLMManager
 from transmeet.utils.file_utils import (
     export_temp_wav,
     delete_file,
@@ -48,15 +49,14 @@ def rate_limited(func):
     return wrapper
 
 @rate_limited
-def _transcribe_chunk_safe(chunk, idx, model_name, client):
+def _transcribe_chunk_safe(chunk, idx, llm_manager: LLMManager):
     try:
-        return _transcribe_chunk(chunk, idx, model_name, client)
+        return _transcribe_chunk(chunk, idx, llm_manager)
     except Exception as e:
         logger.exception(f"Failed to transcribe chunk {idx}: {e}")
         return idx, ""
 
-
-def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=20):
+def transcribe_with_llm_calls(audio_segments, llm_manager: LLMManager, max_workers=20):
     """
     Transcribes a list of audio segments using an LLM client in parallel, rate-limited to 19 calls/minute.
     """
@@ -64,7 +64,7 @@ def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=20
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(_transcribe_chunk_safe, chunk, idx, model_name, client): idx
+            executor.submit(_transcribe_chunk_safe, chunk, idx, llm_manager): idx
             for idx, chunk in enumerate(audio_segments)
         }
 
@@ -74,25 +74,16 @@ def transcribe_with_llm_calls(audio_segments, model_name, client, max_workers=20
 
     return " ".join(results).strip()
 
-
-def _transcribe_chunk(chunk, idx, model_name, client):
-    """
-    Handles exporting, sending the transcription request, and cleanup.
-    """
-    temp_filename = export_temp_wav(chunk, "groq", idx)
-    logger.info(
-        f"Transcribing chunk {idx + 1} using {client.__class__.__name__} and model '{model_name}'..."
-    )
+def _transcribe_chunk(chunk, idx, llm_manager: LLMManager):
+    temp_filename = export_temp_wav(chunk, "llm", idx)
+    logger.info(f"Transcribing chunk {idx + 1} using {llm_manager.provider}...")
 
     try:
-        with open(temp_filename, "rb") as f:
-            response = client.audio.transcriptions.create(
-                file=(temp_filename, f.read()),
-                model=model_name,
-            )
-        return idx, response.text.strip()
+        text = llm_manager.transcribe_audio(temp_filename)
+        return idx, text
     finally:
         delete_file(temp_filename)
+
 
 def process_audio_transcription(
     transcription_client,
@@ -102,18 +93,18 @@ def process_audio_transcription(
     audio_chunk_size_mb: int,
     audio_chunk_overlap: float
 ) -> str:
-    if transcription_client.__class__.__name__ in {"Groq", "OpenAI"}:
-        if file_size_mb > audio_chunk_size_mb:
-            logger.info(f"Audio file is {file_size_mb:.2f} MB — splitting into chunks.")
-            chunks = split_audio_by_target_size(audio, audio_chunk_size_mb, audio_chunk_overlap)
-        else:
-            logger.info(f"Audio file is within size limit — transcribing directly.")
-            chunks = [audio]
+    llm_manager = LLMManager(
+        provider=transcription_client,
+        model_name=transcription_model
+    )
+    if file_size_mb > audio_chunk_size_mb:
+        logger.info(f"Audio file is {file_size_mb:.2f} MB — splitting into chunks.")
+        chunks = split_audio_by_target_size(audio, audio_chunk_size_mb, audio_chunk_overlap)
+    else:
+        logger.info(f"Audio file is within size limit — transcribing directly.")
+        chunks = [audio]
 
-        return transcribe_with_llm_calls(chunks, transcription_model, transcription_client)
-
-    logger.info("Using Google Speech Recognition for transcription.")
-    return transcribe_with_google(audio)
+    return transcribe_with_llm_calls(chunks, llm_manager)
 
 def transcribe_with_google(audio, chunk_length_ms=60_000):
     recognizer = sr.Recognizer()

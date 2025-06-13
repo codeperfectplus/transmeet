@@ -7,13 +7,13 @@ import json
 
 if __name__ == "__main__":
 
-    # audio_path  = "/home/admin/Downloads/record_audio_09-05-2025_18-49-03.wav"
-    # transcript = transcribe_audio_file(
-    #     audio_path=audio_path,
-    # )
+    audio_path  = "/home/alpha/Downloads/Mandatory isms awareness training session india.wav"
+    transcript = transcribe_audio_file(
+        audio_path=audio_path,
+    )
 
-    # print("Transcription:")
-    # print(transcript)
+    print("Transcription:")
+    print(transcript)
 
 
     
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     #     f.write(transcript)
 
     # # transcript.md
-    with open("transcript.md", "r") as f:
-        transcript = f.read()
+    # with open("transcript.md", "r") as f:
+    #     transcript = f.read()
     
     # # segment conversation by speaker
     # segmented_transcript = segment_speech_by_speaker(
@@ -39,18 +39,18 @@ if __name__ == "__main__":
     # with open("segmented_transcript.md", "w") as f:
     #     f.write(segmented_transcript)
 
-    mind_map_json = generate_mind_map_from_transcript(
-        transcript=transcript,
-        llm_client="groq",
-        llm_model="llama-3.3-70b-versatile"
+    # mind_map_json = generate_mind_map_from_transcript(
+    #     transcript=transcript,
+    #     llm_client="groq",
+    #     llm_model="llama-3.3-70b-versatile"
         
-    )
+    # )
 
-    print("Mind Map JSON:")
-    print(mind_map_json)
+    # print("Mind Map JSON:")
+    # print(mind_map_json)
 
-    with open("mind_map.json", "w") as f:
-        json.dump(mind_map_json, f, indent=4)
+    # with open("mind_map.json", "w") as f:
+    #     json.dump(mind_map_json, f, indent=4)
     
 
     # # create transcript to podcast text
