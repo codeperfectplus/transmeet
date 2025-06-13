@@ -1,11 +1,12 @@
 # cython: language_level=3
 import math
-import speech_recognition as sr
+import time
 from collections import deque
 from threading import Lock
-import time
 
+import speech_recognition as sr
 from pydub import AudioSegment
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from transmeet.llm.llm_manager import LLMManager
 from transmeet.utils.file_utils import (
@@ -15,12 +16,8 @@ from transmeet.utils.file_utils import (
 from transmeet.utils.audio_utils import split_audio_by_target_size
 from transmeet.utils.general_utils import get_logger
 
+
 logger = get_logger(__name__)
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import logging
-
-logger = logging.getLogger(__name__)
 
 MAX_CALLS_PER_MINUTE = 20
 TIME_WINDOW = 60  # in seconds

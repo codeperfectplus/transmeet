@@ -5,7 +5,7 @@ from typing import Optional
 
 from transmeet.utils.general_utils import get_logger
 from transmeet.utils.audio_utils import get_audio_size_mb
-from transmeet.clients.llm_tasks import (
+from transmeet.llm.llm_tasks import (
     generate_meeting_minutes,
     create_podcast_dialogue,
     transform_transcript_to_mind_map,

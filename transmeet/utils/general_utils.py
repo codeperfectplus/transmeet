@@ -22,7 +22,7 @@ def extract_datetime_from_filename(filename: str):
 
 def get_logger(name: str = __name__):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     if not logger.handlers:
         log_dir = f"logs/{name}"
