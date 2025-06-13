@@ -13,3 +13,9 @@ def load_prompt(task_name, prompt_type):
 
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
+
+def format_prompt(prompt, *args):
+    for i, arg in enumerate(args):
+        placeholder = f"{{arg{i}}}"
+        prompt = prompt.replace(placeholder, str(arg))
+    return prompt
