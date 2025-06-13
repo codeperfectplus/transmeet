@@ -1,17 +1,17 @@
 # cython: language_level=3
 import math
-from venv import logger
-from groq import Groq
 import speech_recognition as sr
 from collections import deque
 from threading import Lock
 import time
 
+from pydub import AudioSegment
+
 from transmeet.utils.file_utils import (
     export_temp_wav,
     delete_file,
 )
-
+from transmeet.utils.audio_utils import split_audio_by_target_size
 from transmeet.utils.general_utils import get_logger
 
 logger = get_logger(__name__)
@@ -94,6 +94,26 @@ def _transcribe_chunk(chunk, idx, model_name, client):
     finally:
         delete_file(temp_filename)
 
+def process_audio_transcription(
+    transcription_client,
+    transcription_model: str,
+    audio: AudioSegment,
+    file_size_mb: float,
+    audio_chunk_size_mb: int,
+    audio_chunk_overlap: float
+) -> str:
+    if transcription_client.__class__.__name__ in {"Groq", "OpenAI"}:
+        if file_size_mb > audio_chunk_size_mb:
+            logger.info(f"Audio file is {file_size_mb:.2f} MB — splitting into chunks.")
+            chunks = split_audio_by_target_size(audio, audio_chunk_size_mb, audio_chunk_overlap)
+        else:
+            logger.info(f"Audio file is within size limit — transcribing directly.")
+            chunks = [audio]
+
+        return transcribe_with_llm_calls(chunks, transcription_model, transcription_client)
+
+    logger.info("Using Google Speech Recognition for transcription.")
+    return transcribe_with_google(audio)
 
 def transcribe_with_google(audio, chunk_length_ms=60_000):
     recognizer = sr.Recognizer()

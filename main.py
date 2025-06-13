@@ -21,36 +21,36 @@ if __name__ == "__main__":
     # with open("transcript.md", "w") as f:
     #     f.write(transcript)
 
-    # transcript.md
+    # # transcript.md
     with open("transcript.md", "r") as f:
         transcript = f.read()
     
-    # segment conversation by speaker
-    segmented_transcript = segment_speech_by_speaker(
-        transcript=transcript,
-        llm_client="groq",
-        llm_model="llama-3.3-70b-versatile"
-    )
-
-    print("Segmented Transcript:")
-    # print(segmented_transcript)
-
-    # save segmented transcript to file
-    with open("segmented_transcript.md", "w") as f:
-        f.write(segmented_transcript)
-
-    # mind_map_json = generate_mind_map_from_transcript(
+    # # segment conversation by speaker
+    # segmented_transcript = segment_speech_by_speaker(
     #     transcript=transcript,
     #     llm_client="groq",
     #     llm_model="llama-3.3-70b-versatile"
-        
     # )
 
-    # print("Mind Map JSON:")
-    # print(mind_map_json)
+    # print("Segmented Transcript:")
+    # # print(segmented_transcript)
 
-    # with open("mind_map.json", "w") as f:
-    #     json.dump(mind_map_json, f, indent=4)
+    # # save segmented transcript to file
+    # with open("segmented_transcript.md", "w") as f:
+    #     f.write(segmented_transcript)
+
+    mind_map_json = generate_mind_map_from_transcript(
+        transcript=transcript,
+        llm_client="groq",
+        llm_model="llama-3.3-70b-versatile"
+        
+    )
+
+    print("Mind Map JSON:")
+    print(mind_map_json)
+
+    with open("mind_map.json", "w") as f:
+        json.dump(mind_map_json, f, indent=4)
     
 
     # # create transcript to podcast text
