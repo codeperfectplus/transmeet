@@ -12,7 +12,6 @@ from transmeet.llm.llm_tasks import (
     segment_conversation_by_speaker
 )
 from transmeet.clients.transcription_client import process_audio_transcription
-from transmeet.clients.audio_client import generate_podcast_audio_file
 
 logger = get_logger(__name__)
 
@@ -102,11 +101,9 @@ def generate_mind_map_from_transcript(
         return {"error": str(e)}
 
 
-def generate_podcast_script_from_transcript(
-    transcript: str,
-    llm_client: str = "groq",
-    llm_model: str = "llama-3.3-70b-versatile"
-) -> Optional[str]:
+def generate_podcast_script_from_transcript(transcript: str, llm_client: str = "groq",
+                                            llm_model: str = "llama-3.3-70b-versatile"
+                                            ) -> Optional[str]:
     """
     Creates a podcast script from the meeting transcript.
 
@@ -124,30 +121,8 @@ def generate_podcast_script_from_transcript(
         logger.error(f"Error generating podcast script: {e}", exc_info=True)
         return None
 
-
-def synthesize_podcast_audio(podcast_text: str, provider: str = "groq") -> Optional[str]:
-    """
-    Synthesizes podcast audio from podcast script using the selected provider.
-
-    Args:
-        podcast_text (str): Podcast script text.
-        provider (str): TTS provider.
-
-    Returns:
-        str: Path to generated audio file or error.
-    """
-    try:
-        return generate_podcast_audio_file(podcast_text, provider)
-    except Exception as e:
-        logger.error(f"Error generating podcast audio: {e}", exc_info=True)
-        return f"Error: {e}"
-
-
-def segment_speech_by_speaker(
-    transcript: str,
-    llm_client: str = "groq",
-    llm_model: str = "llama-3.3-70b-versatile"
-) -> Optional[str]:
+def segment_speech_by_speaker(transcript: str, llm_client: str = "groq",
+                              llm_model: str = "llama-3.3-70b-versatile") -> Optional[str]:
     """
     Segments transcript into dialogue by speakers using context.
 
